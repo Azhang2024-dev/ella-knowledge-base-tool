@@ -1,0 +1,28 @@
+{
+  "start_urls": [
+    "https://openstax.org/subjects/science",
+    "https://openstax.org/subjects/math",
+    "https://openstax.org/subjects/business",
+    "https://bio.libretexts.org",
+    "https://chem.libretexts.org",
+    "https://math.libretexts.org",
+    "https://phys.libretexts.org",
+    "https://eng.libretexts.org",
+    "https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/",
+    "https://ocw.mit.edu/courses/mathematics/",
+    "https://ocw.mit.edu/courses/physics/",
+    "https://www.saylor.org/courses/",
+    "https://www.open.edu/openlearn/free-courses/full-catalogue"
+  ],
+  "output_dir": "output",
+  "target_extensions": ["pdf", "doc", "docx", "txt"],
+  "max_files": 50,
+  "max_pages": 100,
+  "max_depth": 2,
+  "request_interval": 2.0,
+  "timeout": 20,
+  "same_domain_only": true,
+  "include_keywords": "",
+  "exclude_keywords": "login,signup,privacy,terms,donate,cart,account,contact,forum,discussion",
+  "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36"
+}
