@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Output
+output/
+
+# Config secrets (API Key etc. not committed)
+config/llm_config.json
+
+# Logs
+*.log
+output/logs/
+
+# Scripts / temp test files
+scripts/
+
+# Internal migration notes
+CLAUDE_CODE_MIGRATION_INDEX.md
+
+# IDE
+.vscode/
+.idea/
+
+# Claude Code
+.claude/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Temp / backup files
+*.tmp
+*.bak
+*.orig
