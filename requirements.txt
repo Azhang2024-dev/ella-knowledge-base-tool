@@ -1,0 +1,18 @@
+PySide6
+pyqtdarktheme-fork
+requests
+beautifulsoup4
+trafilatura
+lxml
+openpyxl
+pandas
+crawl4ai
+# 文档处理
+pdfplumber
+python-docx
+pymupdf
+litellm
+xlrd          # 旧版 .xls 文件支持（.xlsx 已由 openpyxl 覆盖）
+# OCR（可选，约 1-2GB，不安装时 auto 模式自动切 LLM 视觉）
+# paddlepaddle
+# paddleocr
