@@ -113,7 +113,7 @@ output/       运行产物（不提交）
 - virtual-dazzling-eich.md — Excel 输出新增元信息列 + LLM 预评分 + 人工标注（横向展开格式）
 - polymorphic-sparking-hopper.md — 文档处理模块（OCR/元信息清除/Query 生成/Excel）
 - merry-crunching-fern.md — Firecrawl 二级链接跟进（深度队列 + links 格式）
-- bug-compiled-swan.md — 评测工具末尾卡住 bug 修复（保存阶段前置日志 + 状态重置）
+- bug-compiled-swan.md — 评测工具末尾卡住 bug 修复（保存阶段前置日志 + 状态标签）
 - 项目内 PLAN_wikipedia_datasource.md — Wikipedia datasource 改造 plan（6 Step，已实施）
 
 ## 禁改文件清单
