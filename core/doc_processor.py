@@ -324,30 +324,27 @@ def _parse_query_list(raw: str) -> list[dict]:
 
 
 def _parse_relevance_scores(raw: str) -> list[dict]:
-    """解析新相关性格式：[{"id": 0, "score": 4}, ...]
+    """解析相关性格式：[{"id": 0, "score": 4}, ...]
 
-    兼容旧纯编号数组格式 [0, 2, 5]：旧格式 score 默认补 3。
-    返回 list[dict]，每条保证含 "id"(int) / "score"(int) 两个键。
-    score >= 2 等价于原 relevant=true。
+    要求显式 score：缺 score 的 dict、非 dict（含旧纯编号 [0,2,5]）一律跳过
+    （fail-closed，不再发明默认 score=3）。返回 list[dict]，每条含 id/score。
+    score >= 2 等价于原 relevant=true（阈值语义由调用方保持不变）。
     """
     result = _extract_json_array(raw, greedy=True)
     if result is not None:
         out: list[dict] = []
         for item in result:
-            if isinstance(item, dict):
-                try:
-                    idx   = int(item.get("id", item.get("idx", -1)))
-                    score = int(item.get("score", 3))
-                    if idx >= 0 and 1 <= score <= 4:
-                        out.append({"id": idx, "score": score})
-                except (ValueError, TypeError):
-                    pass
-            else:
-                # 兼容旧格式：纯编号
-                try:
-                    out.append({"id": int(item), "score": 3})
-                except (ValueError, TypeError):
-                    pass
+            if not isinstance(item, dict):
+                continue
+            if "score" not in item:
+                continue
+            try:
+                idx   = int(item.get("id", item.get("idx", -1)))
+                score = int(item["score"])
+                if idx >= 0 and 1 <= score <= 4:
+                    out.append({"id": idx, "score": score})
+            except (ValueError, TypeError):
+                pass
         return out
     return []
 
@@ -1439,10 +1436,7 @@ async def run_stage_file_match(
                 try:
                     raw   = await _llm_call(prompt, config, max_tokens=800, temperature=0.0, log=_log)
                     items = _parse_relevance_scores(raw)
-                    if not items:
-                        indices = _parse_json_list(raw)
-                        items   = [{"id": int(v), "score": 3} for v in indices
-                                   if v.isdigit() and 0 <= int(v) < len(candidates)]
+                    # fail-closed: do not invent score=3 from bare id lists
                     for item in items:
                         n = item["id"]
                         if b_start <= n < b_start + len(batch_cands):
