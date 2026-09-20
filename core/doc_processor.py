@@ -210,7 +210,7 @@ DEFAULT_FILE_MATCH_PROMPT = """\
 # ── LLM 调用 ─────────────────────────────────────────────────────────
 
 async def _llm_call(prompt: str, config: dict, max_tokens: int = 800,
-                    temperature: float = 0.1, log=None) -> str:
+                    temperature: float = 0.1, log=None, seed=None) -> str:
     """调用 LLM，对 429 限流和 5xx 服务错误自动指数退避重试。
 
     重试次数由 config["llm_max_retries"]（默认 3）控制。
@@ -232,6 +232,9 @@ async def _llm_call(prompt: str, config: dict, max_tokens: int = 800,
         max_tokens=max_tokens,
         temperature=temperature,
     )
+    if seed is not None:
+        # OpenAI-compatible APIs accept seed; others ignore unknown kwargs via litellm.
+        kwargs["seed"] = seed
     eb = _build_extra_body(config)
     if eb:
         kwargs["extra_body"] = eb
@@ -846,6 +849,26 @@ async def run_stage1_extract(
 
 
 
+
+def _query_gen_temperature(config: dict) -> float:
+    """Baseline query-gen temperature is 0.0 for reproducibility (P2.8).
+
+    Creative mode (temperature 0.7) is opt-in via config ``creative=True``
+    or ``query_gen_creative=True``. Scoring calls stay at 0.0 independently.
+    """
+    if config.get("creative") or config.get("query_gen_creative"):
+        return float(config.get("query_gen_temperature_creative", 0.7))
+    return float(config.get("query_gen_temperature", 0.0))
+
+
+def _query_gen_seed(config: dict):
+    """Optional seed for deterministic query generation when API supports it."""
+    if "query_gen_seed" in config:
+        return config.get("query_gen_seed")
+    if "seed" in config:
+        return config.get("seed")
+    return 0
+
 async def run_stage3_gen_queries(
     file_paths: list[str],
     config: dict,
@@ -909,7 +932,7 @@ async def run_stage3_gen_queries(
                 _log(f"  片段：{len(snippet)} 字符")
                 _log("  LLM 生成 queries…")
 
-                raw = await _llm_call(prompt, config, max_tokens=800, temperature=0.7, log=_log)
+                raw = await _llm_call(prompt, config, max_tokens=800, temperature=_query_gen_temperature(config), seed=_query_gen_seed(config), log=_log)
                 qs  = _parse_query_list(raw)[:12]
                 if not qs:
                     _log(f"  [WARN] LLM 未返回有效 query，跳过（原始响应前200字符：{raw[:200]!r}）")
@@ -1228,7 +1251,7 @@ async def run_stage_general_query_gen(
                         break
                     await _wait_if_paused()
                 try:
-                    raw = await _llm_call(prompt, config, max_tokens=domain_max_tokens, temperature=0.7, log=_log)
+                    raw = await _llm_call(prompt, config, max_tokens=domain_max_tokens, temperature=_query_gen_temperature(config), seed=_query_gen_seed(config), log=_log)
                     last_raw = raw
                     last_exc = None  # 本次 LLM 调用成功，清除之前的异常记录
                     parsed = _extract_json_array(raw, greedy=True) or []
