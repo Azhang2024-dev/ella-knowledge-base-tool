@@ -11,6 +11,7 @@ firecrawl_crawler.py - 基于 Firecrawl 云端渲染的正文爬虫
 """
 
 import asyncio
+import os
 import json
 from pathlib import Path
 from urllib.parse import urlparse
@@ -22,8 +23,6 @@ from utils.url_utils import normalize_url
 from utils.http_utils import jitter_sleep
 
 _BASE = "https://api.firecrawl.dev/v2"
-# 默认 key（可被 config["firecrawl_api_key"] 覆盖）
-_DEFAULT_KEY = "fc-ac375c78791b4c4d96a49f20dd3f648f"
 _POLL = 0.3
 
 
@@ -124,7 +123,15 @@ async def firecrawl_crawl(
     # ── 配置 ─────────────────────────────────────────────────────────
     start_urls    = [normalize_url(u) for u in config.get("start_urls", []) if normalize_url(u)]
     search_query  = config.get("firecrawl_search", "").strip()
-    api_key       = config.get("firecrawl_api_key", "").strip() or _DEFAULT_KEY
+    api_key = (
+        (config.get("firecrawl_api_key") or "").strip()
+        or os.environ.get("FIRECRAWL_API_KEY", "").strip()
+    )
+    if not api_key:
+        raise ValueError(
+            "Firecrawl API key missing: set config['firecrawl_api_key'] "
+            "or environment variable FIRECRAWL_API_KEY (no hardcoded default)."
+        )
     output_dir    = config.get("output_dir", "output")
     timeout       = int(config.get("timeout", 60))
     max_pages     = int(config.get("max_pages", 50))
